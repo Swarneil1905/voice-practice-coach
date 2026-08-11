@@ -1,0 +1,21 @@
+name: voice-practice-coach
+services:
+  web:
+    build: ./frontend
+    ports: ["127.0.0.1:8080:8080"]
+    depends_on: [api]
+    restart: unless-stopped
+  api:
+    build: ./api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DJANGO_DEBUG: "true"
+      ALLOWED_HOSTS: localhost,127.0.0.1,api
+    restart: unless-stopped
+  agent:
+    profiles: [voice]
+    build: ./agent
+    env_file: .env
+    restart: unless-stopped
