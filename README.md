@@ -1,18 +1,47 @@
-# Fieldwork Practice
+# Voice Practice Coach
 
-A technical practice workspace with three system design scenarios. Angular handles the room, Python/Django provides review and token endpoints, and a Python LiveKit worker supports optional voice conversations.
+Practice explaining system design decisions, review the topics you covered, and optionally rehearse with a live voice coach.
 
-## Run locally
+[CI](https://github.com/Swarneil1905/voice-practice-coach/actions) · [Architecture](docs/architecture.md) · [Verification notes](docs/verification.md) · [MIT license](LICENSE)
 
-Open this folder in Cursor or open the parent Fieldwork.code-workspace.
+## What you can do
 
-### Docker
+- Choose from three technical scenarios and write a practice response.
+- Review topic coverage with supporting quotes from your own answer.
+- Request optional AI feedback after explicitly consenting to send the response to a provider.
+- Join an optional voice session with microphone controls and an eight minute server enforced limit.
 
-Start Docker Desktop, then run `docker compose up --build` from this folder. Open http://localhost:8080. The voice worker is optional and is excluded from the default build.
+The default review runs locally without an AI account. It checks topic mentions, not whether an explanation is technically correct. Live voice and provider feedback require separate credentials.
 
-### Native development
+## How it works
 
-Requires Python 3.10 or newer and Node.js 22.22 or newer.
+```text
+Angular interface → Django API → Local topic coverage rubric
+                              → Optional AI feedback provider
+                              → Scoped LiveKit room token
+Browser microphone ↔ LiveKit room ↔ Python voice worker
+```
+
+| Component | Responsibility |
+| --- | --- |
+| Angular | Scenarios, response editing, consent, review display and microphone lifecycle |
+| Python / Django | Input validation, CSRF protection, review requests and voice access tokens |
+| Python / LiveKit | Optional speech recognition, coaching responses and speech synthesis |
+| Nginx | Serves the frontend and proxies API requests in Docker |
+
+## Quick start with Docker
+
+Requires Docker Desktop or Docker Engine with Compose. From the repository root:
+
+```sh
+docker compose up --build
+```
+
+Open **http://localhost:8080**. The default stack runs text practice without external credentials. Stop it with `docker compose down`.
+
+## Run without Docker
+
+Requires Python 3.10+ and Node.js 22.22+. Run these commands from the repository root in PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -22,25 +51,53 @@ python -m venv .venv
 
 In a second terminal:
 
-```powershell
+```sh
 cd frontend
 npm ci
 npm start
 ```
 
-Open http://localhost:4200. No external account is needed for local coverage review. The baseline checks topic mentions and cites the learner's text; it does not grade technical correctness.
+Open **http://localhost:4200**. On macOS or Linux, use `.venv/bin/python` in place of `.venv\Scripts\python.exe`.
 
-## Optional AI and voice
+## Optional AI and voice configuration
 
-Copy .env.example to .env for Docker, or set the equivalent environment variables in native terminals. Never commit actual credentials. Native Django does not automatically read .env files.
+Copy `.env.example` to `.env` for Docker. For native development, set the variables in the relevant terminals; Django does not load `.env` automatically.
 
-For text AI feedback, set AI_API_KEY, AI_BASE_URL and AI_MODEL. The interface reveals an explicit consent option when configured. Provider failure is visible and does not produce fabricated feedback.
+| Variables | Purpose |
+| --- | --- |
+| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL` | Enable provider based text feedback |
+| `ENABLE_VOICE=true` | Enable the voice token endpoint |
+| `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | Connect the API and worker to the same LiveKit project |
+| `OPENAI_API_KEY` | Authenticate the voice worker's speech and language services |
+| `VOICE_STT_MODEL`, `VOICE_LLM_MODEL`, `VOICE_TTS_MODEL` | Override the worker's default models |
 
-For voice, create a LiveKit project, configure LIVEKIT_URL, LIVEKIT_API_KEY and LIVEKIT_API_SECRET, set OPENAI_API_KEY for the worker, and set ENABLE_VOICE=true on the API. Install agent/requirements.txt, run `python agent/worker.py download-files`, then `python agent/worker.py dev` with the same LiveKit credentials. In Docker use `docker compose --profile voice up --build`.
+With credentials configured, start the optional worker through Compose:
 
-Audio is transmitted to LiveKit and configured speech/model providers only after consent and microphone permission. The worker enforces a 480 second session deadline independently of the browser. Token lifetime is 120 seconds and controls joining only. Three token requests per hour per API-observed IP limits local use; it is not an account billing cap. Set actual provider spending limits before paid testing.
+```sh
+docker compose --profile voice up --build
+```
 
-## Tests
+Or install `agent/requirements.txt` into a Python environment and run:
+
+```sh
+python agent/worker.py download-files
+python agent/worker.py dev
+```
+
+Audio leaves the browser only after consent and microphone permission. This application does not record audio; external provider retention policies still apply. Voice tokens expire after 120 seconds for joining, and the worker ends sessions after 480 seconds. The API allows three token requests per hour per observed IP. This is a usage guard, not a billing cap.
+
+## API
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| GET | `/api/health` | Service health |
+| GET | `/api/capabilities` | Available features and CSRF cookie |
+| POST | `/api/practice/review` | Topic coverage or consented provider feedback |
+| POST | `/api/voice/token` | Consented access to a scoped voice room |
+
+The browser handles CSRF headers for POST requests. Invalid inputs and provider failures produce explicit errors.
+
+## Development checks
 
 ```powershell
 .venv\Scripts\python.exe api/manage.py test coach
@@ -49,15 +106,20 @@ cd frontend
 npm run build
 ```
 
-Verified locally: production frontend build, 10 Django tests, 3 worker deadline tests, worker SDK import, and browser text review against the API. Live audio and paid AI provider calls have not been exercised because credentials are not configured. No audio is recorded by this code. External provider retention policies still apply.
+GitHub Actions runs the API tests, worker deadline tests, frontend build and default container builds. Live audio and paid provider calls require manual verification with configured credentials. See the [verification notes](docs/verification.md) for the recorded local checks and limitations.
 
-## Code map
+## Repository guide
 
-* frontend/src/practice.ts: scenario, consent, microphone lifecycle and review interface.
-* api/coach/views.py: validation, CSRF, rate limits, optional provider calls and scoped LiveKit token.
-* api/coach/rubric.py: transparent topic coverage baseline.
-* agent/worker.py and agent/session_limit.py: voice coaching and server deadline.
-* docs/: architecture, research provenance and REA evidence.
-* .github/workflows/ci.yml: verification only, no deployment.
+| Path | Contents |
+| --- | --- |
+| `frontend/src/practice.ts` | Practice flow, consent and microphone controls |
+| `api/coach/views.py` | Request handling, validation and provider integration |
+| `api/coach/rubric.py` | Local coverage rules |
+| `agent/` | Voice worker and session deadline tests |
+| `docs/` | Architecture, design provenance and verification details |
 
-Docker Compose configuration validates, but image builds were not run because the local Docker daemon is unavailable. This is a local single-user edition. Railway deployment remains deferred.
+This is a local development application. Authentication, shared rate limits and production configuration are required before public hosting. Railway deployment is not configured.
+
+## License
+
+Original project code is licensed under the [MIT License](LICENSE), copyright © 2026 Swarneil Pradhan. Bundled DM Sans and Instrument Serif fonts retain their SIL Open Font Licenses in [`frontend/public/fonts`](frontend/public/fonts). Third party dependencies retain their respective licenses.
