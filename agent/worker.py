@@ -13,7 +13,7 @@ PROMPTS = {
     "queue": "Design order processing for duplicate payment webhooks and workers that can crash. Explore idempotency, retry policy and recovery.",
     "scale": "Traffic has doubled and latency is rising. Explore measurement, load distribution and failure recovery.",
 }
-server = AgentServer()
+server = AgentServer(num_idle_processes=0, drain_timeout=30, job_memory_warn_mb=400)
 
 
 @server.rtc_session(agent_name="practice-coach")
@@ -59,6 +59,7 @@ async def practice(ctx: JobContext):
     try:
         await session.start(
             room=ctx.room,
+            record=False,
             agent=Agent(
                 instructions=(
                     "You are a concise technical practice coach. Explain that you are an AI voice. "

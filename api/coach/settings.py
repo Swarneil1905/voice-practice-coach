@@ -4,6 +4,8 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() == "true"
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "local-development-only-do-not-deploy")
+if os.getenv("DJANGO_SECRET_KEY_FILE"):
+    SECRET_KEY = Path(os.environ["DJANGO_SECRET_KEY_FILE"]).read_text().strip()
 if not DEBUG and SECRET_KEY == "local-development-only-do-not-deploy":
     raise RuntimeError("Set DJANGO_SECRET_KEY before enabling production mode.")
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver,api").split(
@@ -50,3 +52,10 @@ CACHES = {
         "OPTIONS": {"MAX_ENTRIES": 2000},
     }
 }
+
+# Only the loopback reverse proxy may supply the production scheme and client address.
+TRUST_LOCAL_PROXY = os.getenv("TRUST_LOCAL_PROXY", "false").lower() == "true"
+if TRUST_LOCAL_PROXY:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
