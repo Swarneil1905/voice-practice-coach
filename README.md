@@ -106,7 +106,7 @@ cd frontend
 npm run build
 ```
 
-GitHub Actions runs the API tests, worker deadline tests, frontend build and default container builds. Live audio and paid provider calls require manual verification with configured credentials. See the [verification notes](docs/verification.md) for the recorded local checks and limitations.
+GitHub Actions runs API and deadline tests, frontend and container builds, and production HTTP smoke tests before promoting the tested commit for Railway. Live audio and paid provider calls require manual verification with configured credentials. See the [verification notes](docs/verification.md) for the recorded local checks and limitations.
 
 ## Repository guide
 
@@ -118,7 +118,7 @@ GitHub Actions runs the API tests, worker deadline tests, frontend build and def
 | `agent/` | Voice worker and session deadline tests |
 | `docs/` | Architecture, design provenance and verification details |
 
-This is a local development application. Authentication, shared rate limits and production configuration are required before public hosting. Railway deployment is not configured.
+The public demo uses a bounded Nginx gateway and persistent paid usage allowances. See [deployment and operations](docs/deployment.md) for the release process, quota settings and rollback.
 
 ## License
 
