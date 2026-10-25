@@ -13,9 +13,16 @@ services:
     environment:
       DJANGO_DEBUG: "true"
       ALLOWED_HOSTS: localhost,127.0.0.1,api
+      QUOTA_DATABASE: /data/allowances.sqlite3
+    volumes: ["demo-allowances:/data"]
     restart: unless-stopped
   agent:
     profiles: [voice]
     build: ./agent
     env_file: .env
+    environment:
+      VOICE_GATEWAY_URL: http://api:8000/api/provider
     restart: unless-stopped
+
+volumes:
+  demo-allowances:

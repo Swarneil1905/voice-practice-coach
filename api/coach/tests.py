@@ -112,8 +112,9 @@ class ReviewTests(TestCase):
         )
 
     @patch.dict("os.environ", {"AI_API_KEY": "local-test-only"})
+    @patch("coach.views.reserve_cost", return_value=True)
     @patch("coach.views.httpx.Client")
-    def test_invalid_ai_shape_returns_controlled_error(self, client):
+    def test_invalid_ai_shape_returns_controlled_error(self, client, budget):
         response = client.return_value.__enter__.return_value.post.return_value
         response.json.return_value = {"choices": [{"message": {"content": "{}"}}]}
         self.assertEqual(

@@ -3,6 +3,8 @@ import json
 import logging
 import os
 from contextlib import suppress
+from urllib.parse import urlparse
+from openai import AsyncOpenAI
 from livekit import api
 from livekit.agents import Agent, AgentServer, AgentSession, JobContext, cli
 from livekit.plugins import openai, silero
@@ -18,8 +20,10 @@ server = AgentServer(num_idle_processes=0, drain_timeout=30, job_memory_warn_mb=
 
 @server.rtc_session(agent_name="practice-coach")
 async def practice(ctx: JobContext):
-    if not os.getenv("OPENAI_API_KEY"):
-        raise RuntimeError("Set OPENAI_API_KEY before starting the voice worker.")
+    gateway = urlparse(os.getenv("VOICE_GATEWAY_URL", ""))
+    local = gateway.scheme == "http" and gateway.hostname in {"localhost", "127.0.0.1", "api"}
+    if not os.getenv("VOICE_GATEWAY_SECRET") or not (gateway.scheme == "https" or local):
+        raise RuntimeError("Configure the budgeted voice gateway before starting the worker.")
     try:
         scenario = json.loads(ctx.job.metadata or "{}").get("scenario", "cache")
     except (ValueError, AttributeError):
@@ -28,12 +32,18 @@ async def practice(ctx: JobContext):
         scenario = "cache"
     await ctx.connect()
     await asyncio.wait_for(ctx.wait_for_participant(), timeout=120)
+    provider = AsyncOpenAI(
+        api_key="gateway-only",
+        base_url=os.environ["VOICE_GATEWAY_URL"],
+        default_headers={"X-Voice-Worker-Key": os.environ["VOICE_GATEWAY_SECRET"]},
+        max_retries=0,
+    )
     session = AgentSession(
         vad=silero.VAD.load(),
-        stt=openai.STT(model=os.getenv("VOICE_STT_MODEL", "gpt-4o-mini-transcribe")),
-        llm=openai.LLM(model=os.getenv("VOICE_LLM_MODEL", "gpt-4.1-mini")),
+        stt=openai.STT(model="whisper-1", client=provider, use_realtime=False),
+        llm=openai.LLM(model="gpt-4.1-mini", client=provider, max_completion_tokens=600),
         tts=openai.TTS(
-            model=os.getenv("VOICE_TTS_MODEL", "gpt-4o-mini-tts"), voice="coral"
+            model="tts-1", voice="alloy", client=provider, response_format="pcm"
         ),
     )
 
@@ -54,6 +64,13 @@ async def practice(ctx: JobContext):
         with suppress(asyncio.CancelledError):
             await deadline
         await session.aclose()
+        await provider.close()
+
+    @session.on("error")
+    def stop_failed_session(event):
+        if not getattr(event.error, "recoverable", False):
+            task = asyncio.create_task(delete_room())
+            task.add_done_callback(report_deadline)
 
     ctx.add_shutdown_callback(cleanup)
     try:

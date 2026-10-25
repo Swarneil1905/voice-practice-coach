@@ -65,13 +65,13 @@ Copy `.env.example` to `.env` for Docker. For native development, set the variab
 
 | Variables | Purpose |
 | --- | --- |
-| `AI_API_KEY`, `AI_BASE_URL`, `AI_MODEL` | Enable provider based text feedback |
+| `OPENAI_API_KEY` | Provider key held by the API for text and voice |
+| `QUOTA_DATABASE` | Persistent SQLite file for the shared paid allowance |
+| `VOICE_GATEWAY_URL`, `VOICE_GATEWAY_SECRET` | Worker connection to the budgeted API gateway |
 | `ENABLE_VOICE=true` | Enable the voice token endpoint |
 | `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET` | Connect the API and worker to the same LiveKit project |
-| `OPENAI_API_KEY` | Authenticate the voice worker's speech and language services |
-| `VOICE_STT_MODEL`, `VOICE_LLM_MODEL`, `VOICE_TTS_MODEL` | Override the worker's default models |
 
-With credentials configured, start the optional worker through Compose:
+Set a random `VOICE_GATEWAY_SECRET` shared by API and worker. The worker never calls OpenAI directly. The gateway fixes the models and validates text, audio duration and output limits before reserving spend. With credentials configured, start the optional worker through Compose:
 
 ```sh
 docker compose --profile voice up --build
@@ -84,7 +84,7 @@ python agent/worker.py download-files
 python agent/worker.py dev
 ```
 
-Audio leaves the browser only after consent and microphone permission. This application does not record audio; external provider retention policies still apply. Voice tokens expire after 120 seconds for joining, and the worker ends sessions after 480 seconds. The API allows three token requests per hour per observed IP. This is a usage guard, not a billing cap.
+Audio leaves the browser only after consent and microphone permission. This application does not record audio; external provider retention policies still apply. Voice tokens expire after 120 seconds for joining, and the worker ends sessions after 480 seconds. The API allows three token requests per hour per observed IP. A separate lifetime ledger caps conservative paid reservations at $2 across all visitors and all paid operations. It never resets by day or month. This application guard does not control unrelated use of your API key or account.
 
 ## API
 
