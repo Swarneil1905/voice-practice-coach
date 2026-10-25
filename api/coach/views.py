@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import uuid
 import ipaddress
@@ -140,6 +141,17 @@ def review(request):
             }
         )
         return JsonResponse(baseline)
+    except httpx.HTTPStatusError as exc:
+        # Never log provider bodies, authorization headers or submitted answers.
+        code = "unknown"
+        try:
+            candidate = exc.response.json().get("error", {}).get("code")
+            if candidate in {"insufficient_quota", "invalid_api_key", "model_not_found", "rate_limit_exceeded"}:
+                code = candidate
+        except (ValueError, AttributeError):
+            pass
+        logging.getLogger(__name__).warning("AI review failed: HTTP %s, code %s", exc.response.status_code, code)
+        return error("The AI provider is unavailable. You can still use the local coverage review.", 502)
     except (
         httpx.HTTPError,
         ValueError,
@@ -147,7 +159,8 @@ def review(request):
         IndexError,
         TypeError,
         AttributeError,
-    ):
+    ) as exc:
+        logging.getLogger(__name__).warning("AI review failed: %s", type(exc).__name__)
         return error(
             "The AI provider could not produce a valid review. Your answer has not been stored.",
             502,
