@@ -1,38 +1,28 @@
-# Local verification record
+# Verification record
 
-Verified on 2026-10-25 from the canonical Project subfolders.
+Verified on 2026-10-25 against the public Railway deployment.
 
 | Check | Result |
 | --- | --- |
-| Angular production builds | All three passed |
-| Django review, CSRF, rate limits, provider validation and token scope | 10 tests passed |
-| Voice worker server deadline | 3 tests passed |
-| LiveKit worker import against installed SDK | Passed |
-| C++ image measurement contract | Executable checks passed |
-| .NET API build | Passed with no warnings |
-| Image API HTTP integration | 4 tests passed |
-| PyTorch contract, abstention, split isolation and ONNX parity | 4 tests passed |
-| Java catalog filters and query validation | 5 tests passed |
-| Go ranking, profile, TTL, cache bound and input validation | 5 tests passed |
-| Java + Go HTTP integration | 4 tests passed |
-| Docker Compose configuration | All three validated |
-| Browser text rehearsal | Passed against Django with exact answer evidence |
-| Browser discovery | Ranking, save, dialog and Escape focus restoration verified |
-| Browser inspection | Layout inspected; upload API verified separately |
+| Django tests | 21 passed, including concurrent lifetime budget limits, authentication and provider bounds |
+| Voice session deadline tests | 3 passed |
+| GitHub Actions | API, frontend, Compose, production container, voice worker build and publish passed |
+| Public HTTPS gateway | Health, security headers, stylesheet delivery and CSRF checks passed |
+| Text review | Baseline evidence and a real funded AI feedback request passed |
+| LiveKit | Worker registered; scoped room token connected successfully |
+| Voice provider gateway | Real chat, speech synthesis and speech transcription requests succeeded through the shared budget gateway |
+| Synthetic voice exchange | Received coach greeting, published local synthetic speech, and received at least 25 non-silent response audio frames |
+| Rate limit | A 30-request read-only burst returned 14 successes and 16 controlled 429 responses |
+| Desktop UI | Production styling and text rehearsal inspected in Chrome |
 
-35 Python, Go and Java tests passed, plus the C++ executable checks. This count does not imply paid-provider or real-dataset validation.
+## Budget verification
 
-## Limits of this verification
+Concurrent tests exhausted exactly $2 of conservative reservations, including the initial 20 cent safety reserve. Further chat, transcription and speech reservations were refused. Tests also verified that unauthenticated, oversized and exhausted requests never reach the upstream provider. Missing storage fails closed. Tests use isolated temporary databases and do not consume the production allowance.
 
-* LiveKit credentials and AI credentials are absent. No live microphone conversation or paid model call was made.
-* No representative labeled inspection dataset is present. No trained production defect model or accuracy claim is supplied.
-* The ONNX parity test uses synthetic tensors solely to check numerical export behavior. The TorchScript export path emits upstream deprecation warnings; it is retained for the explicit ONNX opset 17 contract.
-* Chrome's automation extension lacks file URL access, so browser file selection was not completed. No extension permission was changed. The .NET multipart upload boundary passed direct HTTP integration tests.
-* The browser's viewport override did not change its reported viewport. Mobile CSS exists, but a phone-sized browser rendering was not verified in this session.
-* Docker Desktop's Linux engine was unavailable. Compose syntax was checked; container images were not built or started here.
-* Local test results do not imply that GitHub Actions has passed. Consult the repository Actions page for actual run results.
-* Railway deployment is deferred at the user's request.
+Live verification calls consume the same production lifetime allowance as visitors. The ledger measures conservative reservations, not actual invoice charges. See [deployment notes](deployment.md) for its scope and model bounds.
 
-## Windows Java note
+## Limits
 
-The installed portable JDK initially failed to create its internal socket under the default temporary path. Tests and the server passed when jdk.net.unixdomain.tmpdir pointed to api/.java-tmp. The Windows startup script includes this option.
+Synthetic audio was used for verification. No microphone or personal speech was recorded. A human browser microphone conversation and phone-sized rendering were not verified. Browser microphone access still depends on the visitor granting permission.
+
+The production containers were built and exercised by GitHub Actions and Railway. The local Docker engine was unavailable. OpenAI initially rejected calls because the account had no credits; after funding, text feedback and synthetic voice checks succeeded.

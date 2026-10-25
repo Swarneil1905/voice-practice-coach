@@ -2,7 +2,7 @@
 
 Practice explaining system design decisions, review the topics you covered, and optionally rehearse with a live voice coach.
 
-[CI](https://github.com/Swarneil1905/voice-practice-coach/actions) · [Architecture](docs/architecture.md) · [Verification notes](docs/verification.md) · [MIT license](LICENSE)
+[Live demo](https://voice-practice-coach-production.up.railway.app) · [CI](https://github.com/Swarneil1905/voice-practice-coach/actions) · [Architecture](docs/architecture.md) · [Verification notes](docs/verification.md) · [MIT license](LICENSE)
 
 ## What you can do
 
