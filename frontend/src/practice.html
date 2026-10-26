@@ -1,0 +1,269 @@
+<div class="coach-shell">
+  <aside class="coach-nav">
+    <a class="brand" href="/"
+      ><span class="brand-symbol"><app-icon name="mic" /></span
+      ><span>Practice<span class="brand-sub">VOICE COACH</span></span></a
+    >
+    <p class="nav-label">YOUR WORKSPACE</p>
+    <button
+      class="nav-item"
+      [class.active]="view() === 'studio'"
+      (click)="view.set('studio')"
+    >
+      <app-icon name="mic" />Practice studio
+    </button>
+    <button
+      class="nav-item"
+      [class.active]="view() === 'history'"
+      (click)="stopVoice(); view.set('history')"
+    >
+      <app-icon name="clock" />Saved reviews<span class="count"
+        >{{history().length}}</span
+      >
+    </button>
+    <div class="nav-divider"></div>
+    <p class="nav-label">SCENARIOS</p>
+    @for(s of scenarios; track s.id; let i = $index){<button
+      class="scenario-nav"
+      [class.selected]="selected === i"
+      [disabled]="busy()"
+      (click)="select(i); view.set('studio')"
+    >
+      <span class="scenario-index">0{{i+1}}</span
+      ><span>{{s.title}}<small>{{s.level}}</small></span></button
+    >}
+    <div class="nav-bottom">
+      <app-icon name="book" /><strong>Build a clearer answer.</strong>
+      <p>Practice the reasoning behind your technical decisions.</p>
+    </div>
+  </aside>
+  <div class="coach-body">
+    <header class="topbar">
+      <span
+        >Personal workspace
+        <span class="breadcrumb"
+          >/ {{view() === 'studio' ? 'Practice studio' : 'Saved reviews'}}</span
+        ></span
+      ><span class="connection"
+        ><i></i>{{capabilities().voice ? 'Voice available' : 'Text practice
+        ready'}}</span
+      >
+    </header>
+    @if(view() === 'studio'){
+    <div class="studio-content">
+      <div class="heading">
+        <div>
+          <p class="eyebrow">SYSTEM DESIGN PRACTICE</p>
+          <h1>Your next good answer<br />starts here.</h1>
+          <p>Choose a scenario. Talk it through. Find what to improve.</p>
+        </div>
+        <div class="session-length">
+          <app-icon name="clock" /><strong>08</strong
+          ><span>MINUTE VOICE SESSION</span>
+        </div>
+      </div>
+      <label class="mobile-scenario"
+        >Scenario<select
+          [ngModel]="selected"
+          (ngModelChange)="select(+$event)"
+          [disabled]="busy()"
+        >
+          @for(s of scenarios; track s.id; let i = $index){
+          <option [ngValue]="i">{{s.title}}</option>
+          }
+        </select></label
+      >
+      <div class="studio-grid">
+        <section class="exercise">
+          <div class="card-heading">
+            <span class="step-label">01 <span>THE SCENARIO</span></span
+            ><span class="tag">{{scenarios[selected].level}}</span>
+          </div>
+          <h2>{{scenarios[selected].title}}</h2>
+          <p class="prompt">{{scenarios[selected].prompt}}</p>
+          <div class="response-heading">
+            <span class="step-label">02 <span>YOUR RESPONSE</span></span
+            ><span>Text rehearsal</span>
+          </div>
+          <label class="sr-only" for="answer">Your answer</label
+          ><textarea
+            id="answer"
+            [(ngModel)]="answer"
+            [disabled]="busy()"
+            placeholder="Start with the requirements. Walk through your choices, tradeoffs, and failure cases."
+            rows="8"
+            maxlength="8000"
+          ></textarea>
+          <div class="answer-meta">
+            <span>{{answer.length}} / 8000 characters</span
+            ><span>Not saved automatically</span>
+          </div>
+          @if(capabilities().ai_review){<label class="consent"
+            ><input
+              type="checkbox"
+              [(ngModel)]="useAI"
+              [disabled]="busy()"
+            /><span
+              >Include AI coaching. Send this answer to the AI provider.</span
+            ></label
+          >}
+          <button
+            class="primary review-action"
+            [disabled]="busy() || answer.trim().length < 20"
+            (click)="review()"
+          >
+            {{busy() ? 'Reviewing your answer...' : 'Review my
+            answer'}}<app-icon name="arrow" />
+          </button>
+          @if(error()){
+          <p class="error" role="alert">{{error()}}</p>
+          }
+        </section>
+        <aside class="coaching-column">
+          <section class="voice-card">
+            <div class="voice-orbit" [class.live]="voiceState() !== 'idle'">
+              <app-icon name="mic" />
+            </div>
+            <h2>Say it out loud.</h2>
+            <p>
+              Rehearse with a coach that listens and asks follow up questions.
+            </p>
+            @if(capabilities().voice){ @if(voiceState() === 'idle'){<label
+              class="consent"
+              ><input type="checkbox" [(ngModel)]="voiceConsent" /><span
+                >Send microphone audio to LiveKit and AI providers. This app
+                does not save recordings.</span
+              ></label
+            ><button
+              class="voice-button"
+              [disabled]="!voiceConsent"
+              (click)="startVoice()"
+            >
+              <app-icon name="play" />Start voice session</button
+            >} @else{
+            <p class="voice-status" role="status">
+              {{voiceState()}}<strong>{{secondsLeft()}}s remaining</strong>
+            </p>
+            <button class="voice-button" (click)="stopVoice()">
+              <app-icon name="close" />End session</button
+            >} }@else{
+            <p class="voice-status">
+              Voice is unavailable right now. Text practice is ready.
+            </p>
+            }
+          </section>
+          <section class="focus-card">
+            <p class="eyebrow">WHAT TO COVER</p>
+            @for(point of scenarios[selected].points; track point; let i =
+            $index){
+            <div class="focus-point">
+              <span>0{{i+1}}</span>
+              <div>
+                <strong>{{point}}</strong>
+                <p>{{descriptions[i]}}</p>
+              </div>
+            </div>
+            }
+          </section>
+        </aside>
+      </div>
+      @if(result(); as r){
+      <section class="review-panel" aria-live="polite">
+        <div class="review-heading">
+          <div>
+            <p class="eyebrow">YOUR FEEDBACK</p>
+            <h2>{{covered(r)}} of {{r.coverage.length}} topics mentioned</h2>
+          </div>
+          <span class="tag"
+            >{{r.ai_feedback ? 'AI assisted' : 'Coverage check'}}</span
+          >
+        </div>
+        <div class="coverage-grid">
+          @for(item of r.coverage; track item.title){
+          <article>
+            <span class="coverage-status" [class.positive]="item.covered"
+              ><app-icon
+                [name]="item.covered ? 'check' : 'plus'"
+              />{{item.covered ? 'Mentioned' : 'Explore next'}}</span
+            >
+            <h3>{{item.title}}</h3>
+            <p>{{item.evidence}}</p>
+          </article>
+          }
+        </div>
+        @if(r.ai_feedback){
+        <p class="ai-feedback">{{r.ai_feedback}}</p>
+        }
+        <div class="follow-up">
+          <app-icon name="book" />
+          <div>
+            <strong>Try this follow up</strong>
+            <p>{{r.next_question}}</p>
+          </div>
+        </div>
+        <p class="fine-print">{{r.disclaimer}}</p>
+        <div class="review-actions">
+          <button
+            class="primary"
+            (click)="saveReview()"
+            [disabled]="savedNotice() === 'Saved on this device.'"
+          >
+            <app-icon name="plus" />Save on this device</button
+          ><button
+            class="secondary"
+            (click)="exportReview({scenario: scenarios[selected].title, answer: reviewedAnswer, review: r})"
+          >
+            <app-icon name="download" />Export review</button
+          ><span role="status">{{savedNotice()}}</span>
+        </div>
+      </section>
+      }
+    </div>
+    }@else{
+    <div class="studio-content">
+      <div class="heading">
+        <div>
+          <p class="eyebrow">YOUR PRACTICE JOURNAL</p>
+          <h1>Keep the progress.</h1>
+          <p>Reviews you chose to save in this browser. Up to 20 entries.</p>
+        </div>
+      </div>
+      @if(!history().length){
+      <section class="history-empty">
+        <app-icon name="book" />
+        <h2>Your first review belongs here.</h2>
+        <p>Complete a text rehearsal, then save the feedback to revisit it.</p>
+        <button class="primary" (click)="view.set('studio')">
+          Start practicing<app-icon name="arrow" />
+        </button>
+      </section>
+      } @for(entry of history(); track entry.id){
+      <article class="history-card">
+        <div class="review-heading">
+          <div>
+            <span class="eyebrow">{{displayDate(entry.date)}}</span>
+            <h2>{{entry.title}}</h2>
+          </div>
+          <span class="tag"
+            >{{covered(entry.review)}} / {{entry.review.coverage.length}}
+            topics</span
+          >
+        </div>
+        <details>
+          <summary>Read answer and feedback</summary>
+          <p class="saved-answer">{{entry.answer}}</p>
+          <p>{{entry.review.ai_feedback || entry.review.next_question}}</p>
+        </details>
+        <div class="review-actions">
+          <button class="secondary" (click)="exportReview(entry)">
+            <app-icon name="download" />Export</button
+          ><button class="text-button" (click)="deleteReview(entry.id)">
+            Delete saved review
+          </button>
+        </div>
+      </article>
+      }
+    </div>
+    }
+  </div>
+</div>

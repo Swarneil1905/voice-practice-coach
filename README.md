@@ -4,6 +4,8 @@ Practice explaining system design decisions, review the topics you covered, and 
 
 [Live demo](https://voice-practice-coach-production.up.railway.app) · [CI](https://github.com/Swarneil1905/voice-practice-coach/actions) · [Architecture](docs/architecture.md) · [Verification notes](docs/verification.md) · [MIT license](LICENSE)
 
+Text reviews can be saved explicitly in this browser, revisited in Saved reviews, or exported as JSON. The journal keeps the latest 20 entries and is not synced to a server.
+
 ## What you can do
 
 - Choose from three technical scenarios and write a practice response.

@@ -16,205 +16,7 @@ interface Review {
   selector: "practice-room",
   standalone: true,
   imports: [FormsModule, IconComponent],
-  template: ` <section class="workspace practice">
-    <div class="location-row">
-      <span>Practice room</span
-      ><span class="status-label"
-        ><span class="status-dot"></span>Text rehearsal available</span
-      >
-    </div>
-    <div class="page-heading">
-      <div>
-        <p class="eyebrow">A LITTLE PRACTICE. A CLEARER ANSWER.</p>
-        <h1>Make your thinking heard.</h1>
-        <p class="lede">
-          A quiet place to work through technical decisions, one conversation at
-          a time.
-        </p>
-      </div>
-      <span class="edition">01 / PRACTICE</span>
-    </div>
-    <div class="practice-layout">
-      <section class="session-card">
-        <div class="session-top">
-          <span class="caps">TODAY’S SESSION</span
-          ><span class="pill">System design</span>
-        </div>
-        <h2>{{ scenarios[selected].title }}</h2>
-        <p class="session-description">{{ scenarios[selected].description }}</p>
-        <div class="session-meta">
-          <span><app-icon name="clock" /> 8 minute exercise</span
-          ><span><app-icon name="book" /> {{ scenarios[selected].level }}</span>
-        </div>
-        <div class="waveform" aria-hidden="true">
-          @for (h of wave; track $index) {
-            <span [style.height.px]="h"></span>
-          }
-        </div>
-        <div class="room-state">
-          <span class="outline-dot"></span
-          >{{
-            started() ? "Your turn to think it through" : "Your space is ready"
-          }}
-        </div>
-        @if (!started()) {
-          <button class="primary accent" (click)="started.set(true)">
-            Start text rehearsal <app-icon name="arrow" />
-          </button>
-          <p class="micro">
-            {{
-              capabilities().voice
-                ? "Voice is available below."
-                : "Voice sessions will open after LiveKit is connected."
-            }}
-          </p>
-        } @else {
-          <div class="prompt-block">
-            <span class="caps">COACH’S PROMPT</span>
-            <p>{{ scenarios[selected].prompt }}</p>
-          </div>
-          <label class="sr-only" for="answer">Your answer</label
-          ><textarea
-            id="answer"
-            [(ngModel)]="answer"
-            placeholder="Start with the requirements. Explain your choices and their tradeoffs."
-            rows="5"
-            maxlength="8000"
-          ></textarea>
-          @if (capabilities().ai_review) {
-            <label class="consent-label"
-              ><input type="checkbox" [(ngModel)]="useAI" />Include AI feedback
-              and send this answer to the configured model provider.</label
-            >
-          }
-          <div class="answer-actions">
-            <span class="micro">{{ answer.length }} / 8000 characters</span
-            ><button
-              class="primary accent"
-              [disabled]="busy() || answer.trim().length < 20"
-              (click)="review()"
-            >
-              {{ busy() ? "Reviewing…" : "Review coverage" }}
-              <app-icon name="arrow" />
-            </button>
-          </div>
-        }
-        @if (capabilities().voice) {
-          <div class="voice-controls">
-            <label class="consent-label"
-              ><input
-                type="checkbox"
-                [(ngModel)]="voiceConsent"
-                [disabled]="voiceState() !== 'idle'"
-              />I agree to send microphone audio to LiveKit and configured
-              speech and AI providers. No recording is saved by this
-              application.</label
-            >
-            @if (voiceState() === "idle") {
-              <button
-                class="primary green"
-                [disabled]="!voiceConsent"
-                (click)="startVoice()"
-              >
-                <app-icon name="mic" />Start voice rehearsal
-              </button>
-            } @else {
-              <p class="voice-status" role="status">
-                {{ voiceState() }} · {{ secondsLeft() }} seconds remaining
-              </p>
-              <button class="secondary" (click)="stopVoice()">
-                End voice session
-              </button>
-            }
-          </div>
-        }
-        @if (error()) {
-          <p class="error" role="alert">{{ error() }}</p>
-        }
-      </section>
-      <aside class="session-sidebar">
-        <div class="section-label">
-          <h3>What you’ll work on</h3>
-          <span>03</span>
-        </div>
-        @for (
-          point of scenarios[selected].points;
-          track point;
-          let i = $index
-        ) {
-          <div class="learning-point">
-            <span class="index">0{{ i + 1 }}</span>
-            <div>
-              <h4>{{ point }}</h4>
-              <p>{{ descriptions[i] }}</p>
-            </div>
-          </div>
-        }
-        <div class="coach-note">
-          <span class="caps">A NOTE BEFORE YOU BEGIN</span>
-          <p>
-            There is rarely one right architecture. Explain what you would
-            choose, and what would change your mind.
-          </p>
-          <span class="note-signature">Your reasoning matters.</span>
-        </div>
-        <div class="privacy-note">
-          <app-icon name="info" />
-          <p>
-            Answers are not saved by this application. Baseline reviews run on
-            the local API. AI feedback and voice require your consent before
-            using external providers.
-          </p>
-        </div>
-      </aside>
-    </div>
-    @if (result()) {
-      <section class="review-panel" aria-live="polite">
-        <div class="section-label">
-          <h3>Your coverage review</h3>
-          <span>{{
-            result()!.ai_feedback ? "AI assisted review" : "Rule based baseline"
-          }}</span>
-        </div>
-        <div class="coverage-grid">
-          @for (item of result()!.coverage; track item.title) {
-            <article>
-              <span class="pill" [class.positive]="item.covered">{{
-                item.covered ? "Mentioned" : "Explore next"
-              }}</span>
-              <h4>{{ item.title }}</h4>
-              <p>{{ item.evidence }}</p>
-            </article>
-          }
-        </div>
-        @if (result()!.ai_feedback) {
-          <p class="ai-feedback">{{ result()!.ai_feedback }}</p>
-        }
-        <p class="follow-up">{{ result()!.next_question }}</p>
-        <p class="micro">{{ result()!.disclaimer }}</p>
-      </section>
-    }
-    <section class="practice-library">
-      <div class="section-label">
-        <h3>Find your next conversation</h3>
-        <span>Three focused scenarios</span>
-      </div>
-      <div class="scenario-grid">
-        @for (s of scenarios; track s.id; let i = $index) {
-          <button
-            class="scenario"
-            [class.selected]="selected === i"
-            (click)="select(i)"
-          >
-            <span class="scenario-number">0{{ i + 1 }}</span>
-            <h4>{{ s.title }}</h4>
-            <p>{{ s.level }} · 8 minutes</p>
-            <app-icon [name]="selected === i ? 'check' : 'arrow'" />
-          </button>
-        }
-      </div>
-    </section>
-  </section>`,
+  templateUrl: "./practice.html",
 })
 export class PracticeComponent implements OnInit, OnDestroy {
   capabilities = signal({ voice: false, ai_review: false });
@@ -227,6 +29,24 @@ export class PracticeComponent implements OnInit, OnDestroy {
   private audioElements: HTMLMediaElement[] = [];
   private voiceGeneration = 0;
   async ngOnInit() {
+    try {
+      const entries = JSON.parse(
+        localStorage.getItem("voice-practice-reviews") || "[]",
+      );
+      if (Array.isArray(entries))
+        this.history.set(
+          entries
+            .filter(
+              (x) =>
+                x &&
+                typeof x.title === "string" &&
+                typeof x.answer === "string" &&
+                x.review &&
+                Array.isArray(x.review.coverage),
+            )
+            .slice(0, 20),
+        );
+    } catch {}
     try {
       this.capabilities.set(
         await api<{ voice: boolean; ai_review: boolean }>("capabilities"),
@@ -301,25 +121,80 @@ export class PracticeComponent implements OnInit, OnDestroy {
     this.secondsLeft.set(480);
   }
 
-  started = signal(false);
   busy = signal(false);
   error = signal("");
   result = signal<Review | null>(null);
   answer = "";
+  reviewedAnswer = "";
   selected = 0;
+  view = signal<"studio" | "history">("studio");
+  savedNotice = signal("");
+  history = signal<
+    {
+      id: string;
+      title: string;
+      date: string;
+      answer: string;
+      review: Review;
+    }[]
+  >([]);
+  saveReview() {
+    const review = this.result();
+    if (!review) return;
+    const entries = [
+      {
+        id: crypto.randomUUID(),
+        title: this.scenarios[this.selected].title,
+        date: new Date().toISOString(),
+        answer: this.reviewedAnswer,
+        review,
+      },
+      ...this.history(),
+    ].slice(0, 20);
+    try {
+      localStorage.setItem("voice-practice-reviews", JSON.stringify(entries));
+      this.history.set(entries);
+      this.savedNotice.set("Saved on this device.");
+    } catch {
+      this.savedNotice.set(
+        "Browser storage is unavailable. Export your review instead.",
+      );
+    }
+  }
+  deleteReview(id: string) {
+    const entries = this.history().filter((x) => x.id !== id);
+    try {
+      localStorage.setItem("voice-practice-reviews", JSON.stringify(entries));
+      this.history.set(entries);
+    } catch {
+      this.error.set("Could not update browser storage.");
+    }
+  }
+  exportReview(data: unknown) {
+    const url = URL.createObjectURL(
+      new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }),
+    );
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "practice-review.json";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  covered(review: Review) {
+    return review.coverage.filter((x) => x.covered).length;
+  }
+  displayDate(date: string) {
+    return new Date(date).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
+  }
+
   descriptions = [
     "Frame the problem before proposing a solution.",
     "Compare practical choices and their consequences.",
     "Make the failure path as clear as the happy path.",
   ];
-  wave = Array.from(
-    { length: 43 },
-    (_, i) =>
-      12 +
-      Math.round(
-        (1 - Math.abs(i - 21) / 22) * (18 + 35 * Math.abs(Math.sin(i * 1.83))),
-      ),
-  );
   scenarios = [
     {
       id: "cache",
@@ -357,14 +232,19 @@ export class PracticeComponent implements OnInit, OnDestroy {
     },
   ];
   select(i: number) {
+    if (this.busy()) return;
     this.stopVoice();
     this.selected = i;
-    this.started.set(false);
+    this.savedNotice.set("");
     this.result.set(null);
     this.answer = "";
     this.error.set("");
   }
   async review() {
+    if (this.busy()) return;
+    this.savedNotice.set("");
+    this.reviewedAnswer = this.answer;
+    this.result.set(null);
     this.busy.set(true);
     this.error.set("");
     try {
