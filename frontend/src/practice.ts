@@ -29,6 +29,15 @@ export class PracticeComponent implements OnInit, OnDestroy {
   private audioElements: HTMLMediaElement[] = [];
   private voiceGeneration = 0;
   async ngOnInit() {
+    const scenario = Number(
+      new URLSearchParams(location.search).get("scenario") || 0,
+    );
+    if (
+      Number.isInteger(scenario) &&
+      scenario >= 0 &&
+      scenario < this.scenarios.length
+    )
+      this.selected = scenario;
     try {
       const entries = JSON.parse(
         localStorage.getItem("voice-practice-reviews") || "[]",

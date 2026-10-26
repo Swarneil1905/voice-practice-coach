@@ -1,0 +1,201 @@
+<a class="skip-link" [href]="skipHref">Skip to content</a> @if(workspace){
+<main id="main"><practice-room /></main>
+}@else{
+<div class="home voice-home">
+  <header class="site-header">
+    <a class="wordmark" href="/" aria-label="Practice home"
+      ><span class="logo-mark"><app-icon name="mic" /></span>Practice<span
+        class="wordmark-note"
+        >Voice coach</span
+      ></a
+    >
+    <button
+      class="menu-toggle"
+      (click)="menu.set(!menu())"
+      [attr.aria-expanded]="menu()"
+      aria-controls="home-nav"
+    >
+      {{menu() ? 'Close' : 'Menu'}}<app-icon name="grid" />
+    </button>
+    <nav id="home-nav" aria-label="Main navigation" [class.open]="menu()">
+      <a href="#product" (click)="menu.set(false)">The studio</a
+      ><a href="#how-it-works" (click)="menu.set(false)">How it works</a
+      ><a href="#questions" (click)="menu.set(false)">Questions</a
+      ><a class="nav-cta" href="/workspace"
+        >Start practicing<app-icon name="arrow"
+      /></a>
+    </nav>
+  </header>
+  <main id="main">
+    <section class="voice-hero wrap" id="product">
+      <div class="hero-copy">
+        <p class="overline"><span></span> A SPACE TO THINK OUT LOUD</p>
+        <h1>Know your stuff.<br /><em>Find your words.</em></h1>
+        <p class="hero-description">
+          Turn technical knowledge into a clear conversation. Rehearse system
+          design scenarios, talk through your decisions, and find the gaps in
+          your answer.
+        </p>
+        <div class="cta-row">
+          <a class="button solid" href="/workspace"
+            >Start a practice session<app-icon name="arrow" /></a
+          ><a class="button quiet" href="#how-it-works">See how it works</a>
+        </div>
+        <p class="hero-note">
+          No account needed. Start with text or opt into voice.
+        </p>
+      </div>
+      <div class="session-preview">
+        <div class="preview-top">
+          <span><app-icon name="mic" />YOUR PRACTICE STUDIO</span
+          ><span>Example session</span>
+        </div>
+        <div class="scenario-tabs" role="group" aria-label="Preview a scenario">
+          @for(item of examples; track item.title; let i=$index){<button
+            [class.active]="example()===i"
+            [attr.aria-pressed]="example()===i"
+            (click)="example.set(i)"
+          >
+            {{item.title}}</button
+          >}
+        </div>
+        <div class="preview-conversation" aria-live="polite">
+          <span class="speaker">THE SCENARIO</span>
+          <h2>{{examples[example()].question}}</h2>
+          <div class="answer-bubble">
+            <span>Your approach</span>
+            <p>{{examples[example()].answer}}</p>
+          </div>
+          <div class="followup-bubble">
+            <span class="coach-avatar"><app-icon name="mic" /></span>
+            <div>
+              <span>A QUESTION TO EXPLORE</span>
+              <p>{{examples[example()].followup}}</p>
+            </div>
+          </div>
+        </div>
+        <div class="preview-bottom">
+          <span><i></i>Think. Explain. Refine.</span
+          ><a [href]="'/workspace?scenario=' + example()"
+            >Try this scenario<app-icon name="arrow"
+          /></a>
+        </div>
+      </div>
+    </section>
+    <div class="capability-strip wrap">
+      <span><app-icon name="book" />Focused system design scenarios</span
+      ><span><app-icon name="mic" />Optional spoken coaching</span
+      ><span><app-icon name="download" />Reviews you can keep</span>
+    </div>
+    <section class="section wrap" id="how-it-works">
+      <div class="section-intro">
+        <p class="overline">FROM A BLANK PAGE TO A BETTER ANSWER</p>
+        <h2>A little practice.<br />A clearer next conversation.</h2>
+        <p>You bring the reasoning. The studio gives you a place to test it.</p>
+      </div>
+      <div class="steps">
+        <article>
+          <span class="step-number">01</span>
+          <h3>Pick a real tradeoff.</h3>
+          <p>
+            Choose caching, reliable queues, or API scaling. Start with a
+            concrete problem and the decisions it asks you to make.
+          </p>
+        </article>
+        <article>
+          <span class="step-number">02</span>
+          <h3>Make your case.</h3>
+          <p>
+            Write your answer at your own pace, or use an eight minute voice
+            session to practice a conversation.
+          </p>
+        </article>
+        <article>
+          <span class="step-number">03</span>
+          <h3>Find your next improvement.</h3>
+          <p>
+            Review topic coverage and a follow up question. Save a text review
+            on your device or export it for later.
+          </p>
+        </article>
+      </div>
+    </section>
+    <section class="practice-band wrap">
+      <div>
+        <p class="overline">MORE THAN MEMORIZING AN ANSWER</p>
+        <h2>Explain the why.<br />Then try the what if.</h2>
+        <p>
+          A cache is easy to name. Explaining freshness, failure, and
+          invalidation takes practice. Work through the details before the
+          conversation that matters.
+        </p>
+        <a class="button solid" href="/workspace?scenario=0"
+          >Practice a caching scenario<app-icon name="arrow"
+        /></a>
+      </div>
+      <div class="topic-map">
+        <span class="topic central">Your design decision</span
+        ><span class="topic">Requirements</span
+        ><span class="topic">Tradeoffs</span
+        ><span class="topic">Failure cases</span
+        ><span class="topic">What changes at scale?</span>
+        <p>Topics to explore, not a hiring score.</p>
+      </div>
+    </section>
+    <section class="section faq wrap" id="questions">
+      <div>
+        <p class="overline">BEFORE YOU START</p>
+        <h2>A few useful answers.</h2>
+      </div>
+      <div>
+        <details>
+          <summary>What feedback will I receive?</summary>
+          <p>
+            Text practice checks coverage against the scenario's rubric and
+            suggests a follow up question. Optional AI coaching adds feedback.
+            Coverage is a practice aid, not an assessment of your ability or
+            interview readiness.
+          </p>
+        </details>
+        <details>
+          <summary>Do I need to turn on my microphone?</summary>
+          <p>
+            No. Text practice works without a microphone. Voice starts only
+            after you consent and choose to begin. Audio is processed by LiveKit
+            and AI providers; this application does not save recordings.
+          </p>
+        </details>
+        <details>
+          <summary>Where are my reviews saved?</summary>
+          <p>
+            Only reviews you choose to save are kept in this browser, up to 20
+            entries. They do not sync across devices. Export a review if you
+            want a separate copy.
+          </p>
+        </details>
+        <details>
+          <summary>Is voice always available?</summary>
+          <p>
+            Voice and AI coaching share a limited public allowance. When that
+            allowance is reached, those features pause. Text practice remains
+            available, subject to request limits.
+          </p>
+        </details>
+      </div>
+    </section>
+    <section class="closing wrap">
+      <h2>Your next answer can be clearer.</h2>
+      <a class="button solid" href="/workspace"
+        >Open the studio<app-icon name="arrow"
+      /></a>
+    </section>
+  </main>
+  <footer class="site-footer wrap">
+    <a class="wordmark" href="/">Practice</a
+    ><span>Built by Swarneil Pradhan</span
+    ><a href="https://github.com/Swarneil1905/voice-practice-coach"
+      >Source code<app-icon name="arrow"
+    /></a>
+  </footer>
+</div>
+}

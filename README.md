@@ -2,6 +2,8 @@
 
 Practice explaining system design decisions, review the topics you covered, and optionally rehearse with a live voice coach.
 
+The root URL opens the product homepage. Choose the main action to enter the application at `/workspace`. The homepage explains the workflow, data handling, and current capabilities before a session begins.
+
 [Live demo](https://voice-practice-coach-production.up.railway.app) · [CI](https://github.com/Swarneil1905/voice-practice-coach/actions) · [Architecture](docs/architecture.md) · [Verification notes](docs/verification.md) · [MIT license](LICENSE)
 
 Text reviews can be saved explicitly in this browser, revisited in Saved reviews, or exported as JSON. The journal keeps the latest 20 entries and is not synced to a server.
@@ -118,10 +120,10 @@ GitHub Actions runs API and deadline tests, frontend and container builds, and p
 | `api/coach/views.py` | Request handling, validation and provider integration |
 | `api/coach/rubric.py` | Local coverage rules |
 | `agent/` | Voice worker and session deadline tests |
-| `docs/` | Architecture, design provenance and verification details |
+| `docs/` | Architecture and verification details |
 
 The public demo uses a bounded Nginx gateway and persistent paid usage allowances. See [deployment and operations](docs/deployment.md) for the release process, quota settings and rollback.
 
 ## License
 
-Original project code is licensed under the [MIT License](LICENSE), copyright © 2026 Swarneil Pradhan. Bundled DM Sans and Instrument Serif fonts retain their SIL Open Font Licenses in [`frontend/public/fonts`](frontend/public/fonts). Third party dependencies retain their respective licenses.
+Original project code is licensed under the [MIT License](LICENSE), copyright © 2026 Swarneil Pradhan. Bundled fonts retain their SIL Open Font Licenses in [`frontend/public/fonts`](frontend/public/fonts). Third party dependencies retain their respective licenses.

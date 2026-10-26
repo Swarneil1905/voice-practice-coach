@@ -1,42 +1,21 @@
 <div class="coach-shell">
-  <aside class="coach-nav">
+  <header class="studio-navigation">
     <a class="brand" href="/"
       ><span class="brand-symbol"><app-icon name="mic" /></span
       ><span>Practice<span class="brand-sub">VOICE COACH</span></span></a
     >
-    <p class="nav-label">YOUR WORKSPACE</p>
-    <button
-      class="nav-item"
-      [class.active]="view() === 'studio'"
-      (click)="view.set('studio')"
-    >
-      <app-icon name="mic" />Practice studio
-    </button>
-    <button
-      class="nav-item"
-      [class.active]="view() === 'history'"
-      (click)="stopVoice(); view.set('history')"
-    >
-      <app-icon name="clock" />Saved reviews<span class="count"
-        >{{history().length}}</span
+    <nav aria-label="Workspace navigation">
+      <button [class.active]="view() === 'studio'" (click)="view.set('studio')">
+        Practice studio</button
+      ><button
+        [class.active]="view() === 'history'"
+        (click)="stopVoice(); view.set('history')"
       >
-    </button>
-    <div class="nav-divider"></div>
-    <p class="nav-label">SCENARIOS</p>
-    @for(s of scenarios; track s.id; let i = $index){<button
-      class="scenario-nav"
-      [class.selected]="selected === i"
-      [disabled]="busy()"
-      (click)="select(i); view.set('studio')"
-    >
-      <span class="scenario-index">0{{i+1}}</span
-      ><span>{{s.title}}<small>{{s.level}}</small></span></button
-    >}
-    <div class="nav-bottom">
-      <app-icon name="book" /><strong>Build a clearer answer.</strong>
-      <p>Practice the reasoning behind your technical decisions.</p>
-    </div>
-  </aside>
+        Saved reviews<span>{{history().length}}</span>
+      </button>
+    </nav>
+    <a class="studio-home" href="/">How it works<app-icon name="arrow" /></a>
+  </header>
   <div class="coach-body">
     <header class="topbar">
       <span
@@ -62,7 +41,7 @@
           ><span>MINUTE VOICE SESSION</span>
         </div>
       </div>
-      <label class="mobile-scenario"
+      <label class="scenario-picker"
         >Scenario<select
           [ngModel]="selected"
           (ngModelChange)="select(+$event)"
