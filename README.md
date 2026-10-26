@@ -1,21 +1,35 @@
 # Voice Practice Coach
 
-Practice explaining system design decisions, review the topics you covered, and optionally rehearse with a live voice coach.
+A workspace for rehearsing system design explanations. Choose a scenario, write an answer, review the topics you covered, and keep a record of your practice. Optional AI feedback and live voice coaching extend the same workflow.
 
-The root URL opens the product homepage. Choose the main action to enter the application at `/workspace`. The homepage explains the workflow, data handling, and current capabilities before a session begins.
+[Open the app](https://voice-practice-coach-production.up.railway.app) · [GitHub Actions](https://github.com/Swarneil1905/voice-practice-coach/actions) · [MIT license](LICENSE)
 
-[Live demo](https://voice-practice-coach-production.up.railway.app) · [CI](https://github.com/Swarneil1905/voice-practice-coach/actions) · [Architecture](docs/architecture.md) · [Verification notes](docs/verification.md) · [MIT license](LICENSE)
+## Watch the walkthrough
 
-Text reviews can be saved explicitly in this browser, revisited in Saved reviews, or exported as JSON. The journal keeps the latest 20 entries and is not synced to a server.
+[![Voice Practice Coach walkthrough: choose a scenario, review an answer and save feedback](docs/assets/walkthrough.gif)](docs/assets/walkthrough.mp4)
 
-## What you can do
+[Watch or download the full video](docs/assets/walkthrough.mp4) (00:00:34.12) · [View a still screenshot](docs/assets/preview.png). This silent recording shows the live text practice workflow. AI feedback and microphone sessions are optional and are not shown.
 
-- Choose from three technical scenarios and write a practice response.
-- Review topic coverage with supporting quotes from your own answer.
-- Request optional AI feedback after explicitly consenting to send the response to a provider.
-- Join an optional voice session with microphone controls and an eight minute server enforced limit.
+## Try it in a minute
 
-The default review runs locally without an AI account. It checks topic mentions, not whether an explanation is technically correct. Live voice and provider feedback require separate credentials.
+1. Open the homepage, select a scenario and choose **Start practicing**.
+2. Write your response in the practice studio and request a review.
+3. Read the coverage feedback and the supporting excerpts from your answer.
+4. Save the review, open **Saved reviews**, or export it as JSON.
+
+The free review runs on the Django server without an external AI provider. It checks topic coverage, not whether an explanation is technically correct. Three system design scenarios are included.
+
+## Current capabilities
+
+| Feature | Behavior |
+| --- | --- |
+| Text practice | Scenario prompts, answer editing and evidence from the submitted response |
+| Review journal | Explicit saves to this browser, with the latest 20 reviews retained |
+| Export | Download a review as JSON |
+| AI feedback | Requires provider credentials, consent and remaining shared allowance |
+| Live coaching | Requires LiveKit and a voice worker; microphone controls and an eight minute session limit |
+
+Saved reviews do not sync across devices. Audio is sent only after consent and browser microphone permission. The public paid allowance is shared across visitors; free text practice does not consume it.
 
 ## How it works
 
@@ -123,6 +137,16 @@ GitHub Actions runs API and deadline tests, frontend and container builds, and p
 | `docs/` | Architecture and verification details |
 
 The public demo uses a bounded Nginx gateway and persistent paid usage allowances. See [deployment and operations](docs/deployment.md) for the release process, quota settings and rollback.
+
+## Deployment and availability
+
+The homepage is at `/`; the product workspace is at `/workspace`. The public Railway service uses sleep mode to reduce idle hosting costs. The first visit after inactivity can take longer while the service starts. Public requests are rate limited.
+
+GitHub Actions checks frontend and backend code, builds the containers, tests the public HTTP path, and verifies both process failure handling and a clean Docker shutdown. Only a verified current `main` commit is promoted to the `production` branch that Railway deploys. A normal platform stop exits successfully; an unexpected required process exit fails the container.
+
+The LiveKit worker runs as a separate Railway service without sleep mode. Paid operations pass through a persistent shared allowance; redeploying the web service does not reset it.
+
+See [deployment and operations](docs/deployment.md) for configuration and rollback, and [architecture](docs/architecture.md) for the service boundaries.
 
 ## License
 
