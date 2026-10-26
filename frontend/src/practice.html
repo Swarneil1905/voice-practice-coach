@@ -24,7 +24,8 @@
           >/ {{view() === 'studio' ? 'Practice studio' : 'Saved reviews'}}</span
         ></span
       ><span class="connection"
-        ><i></i>{{capabilities().voice ? 'Voice available' : 'Text practice
+        ><i></i>{{connecting() ? 'Connecting...' : !ready() ? 'Connection
+        unavailable' : capabilities().voice ? 'Voice available' : 'Text practice
         ready'}}</span
       >
     </header>
@@ -88,15 +89,20 @@
           >}
           <button
             class="primary review-action"
-            [disabled]="busy() || answer.trim().length < 20"
+            [disabled]="!ready() || busy() || answer.trim().length < 20"
             (click)="review()"
           >
-            {{busy() ? 'Reviewing your answer...' : 'Review my
-            answer'}}<app-icon name="arrow" />
+            {{connecting() ? 'Connecting...' : busy() ? 'Reviewing your
+            answer...' : 'Review my answer'}}<app-icon name="arrow" />
           </button>
           @if(error()){
           <p class="error" role="alert">{{error()}}</p>
-          }
+          @if(!ready() && !connecting()){<button
+            class="secondary"
+            (click)="loadCapabilities()"
+          >
+            Retry connection</button
+          >} }
         </section>
         <aside class="coaching-column">
           <section class="voice-card">
@@ -127,7 +133,8 @@
               <app-icon name="close" />End session</button
             >} }@else{
             <p class="voice-status">
-              Voice is unavailable right now. Text practice is ready.
+              {{ready() ? "Voice is unavailable right now. Text practice is
+              ready." : "Connect to the service to begin a practice session."}}
             </p>
             }
           </section>

@@ -19,6 +19,8 @@ interface Review {
   templateUrl: "./practice.html",
 })
 export class PracticeComponent implements OnInit, OnDestroy {
+  ready = signal(false);
+  connecting = signal(true);
   capabilities = signal({ voice: false, ai_review: false });
   useAI = false;
   voiceConsent = false;
@@ -56,12 +58,21 @@ export class PracticeComponent implements OnInit, OnDestroy {
             .slice(0, 20),
         );
     } catch {}
+    await this.loadCapabilities();
+  }
+  async loadCapabilities() {
+    this.connecting.set(true);
+    this.ready.set(false);
+    this.error.set("");
     try {
       this.capabilities.set(
         await api<{ voice: boolean; ai_review: boolean }>("capabilities"),
       );
+      this.ready.set(true);
     } catch (e) {
       this.error.set((e as Error).message);
+    } finally {
+      this.connecting.set(false);
     }
   }
   ngOnDestroy() {
@@ -250,7 +261,7 @@ export class PracticeComponent implements OnInit, OnDestroy {
     this.error.set("");
   }
   async review() {
-    if (this.busy()) return;
+    if (!this.ready() || this.busy()) return;
     this.savedNotice.set("");
     this.reviewedAnswer = this.answer;
     this.result.set(null);
