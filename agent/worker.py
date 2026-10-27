@@ -9,6 +9,7 @@ from livekit import api
 from livekit.agents import Agent, AgentServer, AgentSession, JobContext, cli
 from livekit.plugins import openai, silero
 from session_limit import end_after
+from transcript import append_transcript
 
 PROMPTS = {
     "cache": "Design a product catalog that stays fast without showing unavailable items. Explore freshness, TTL, invalidation and failure handling.",
@@ -47,6 +48,25 @@ async def practice(ctx: JobContext):
         ),
     )
 
+    transcript = ""
+    transcript_tasks = set()
+
+    @session.on("user_input_transcribed")
+    def share_transcript(event):
+        nonlocal transcript
+        if not event.is_final or not event.transcript.strip():
+            return
+        transcript, payload = append_transcript(transcript, event.transcript)
+        task = asyncio.create_task(ctx.room.local_participant.publish_data(
+            payload,
+            reliable=True, topic="practice-transcript"))
+        transcript_tasks.add(task)
+        def completed(done):
+            transcript_tasks.discard(done)
+            if not done.cancelled() and done.exception():
+                logging.warning("Could not deliver practice transcript")
+        task.add_done_callback(completed)
+
     async def delete_room():
         async with api.LiveKitAPI() as client:
             await client.room.delete_room(api.DeleteRoomRequest(room=ctx.room.name))
@@ -64,6 +84,10 @@ async def practice(ctx: JobContext):
         with suppress(asyncio.CancelledError):
             await deadline
         await session.aclose()
+        for task in list(transcript_tasks):
+            task.cancel()
+        if transcript_tasks:
+            await asyncio.gather(*list(transcript_tasks), return_exceptions=True)
         await provider.close()
 
     @session.on("error")

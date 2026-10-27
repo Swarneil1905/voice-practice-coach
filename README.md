@@ -1,35 +1,34 @@
 # Voice Practice Coach
 
-A workspace for rehearsing system design explanations. Choose a scenario, write an answer, review the topics you covered, and keep a record of your practice. Optional AI feedback and live voice coaching extend the same workflow.
+System design interview practice for developers who want to improve an explanation, not collect an opaque score. Answer a scenario, work through specific drills, revise the answer and export a before and after practice report.
 
-[Open the app](https://voice-practice-coach-production.up.railway.app) · [GitHub Actions](https://github.com/Swarneil1905/voice-practice-coach/actions) · [MIT license](LICENSE)
+[Open the app](https://voice-practice-coach-production.up.railway.app) | [GitHub Actions](https://github.com/Swarneil1905/voice-practice-coach/actions) | [MIT license](LICENSE)
 
-## Watch the walkthrough
+## See the outcome
 
-[![Voice Practice Coach walkthrough: choose a scenario, review an answer and save feedback](docs/assets/walkthrough.gif)](docs/assets/walkthrough.mp4)
+[![Interview practice from first answer to revision report](docs/assets/walkthrough.gif)](docs/assets/walkthrough.mp4)
 
-[Watch or download the full video](docs/assets/walkthrough.mp4) (00:00:34.12) · [View a still screenshot](docs/assets/preview.png). This silent recording shows the live text practice workflow. AI feedback and microphone sessions are optional and are not shown.
+[Watch the short walkthrough](docs/assets/walkthrough.mp4). Recorded against the local MVP build with the real Django API. It demonstrates free text practice; paid AI and microphone sessions are not shown.
 
-## Try it in a minute
+## Try it
 
-1. Open the homepage, select a scenario and choose **Start practicing**.
-2. Write your response in the practice studio and request a review.
-3. Read the coverage feedback and the supporting excerpts from your answer.
-4. Save the review, open **Saved reviews**, or export it as JSON.
+1. Choose **Reliable queues** and explain how you would process duplicate payment webhooks.
+2. Request a review. Read the evidence and targeted exercises for idempotency, retries and recovery.
+3. Select **Revise my answer and compare**. Address the missing decisions, then request another review.
+4. Export the practice plan. It contains both answers, newly addressed or omitted topics, and concrete exercises.
 
-The free review runs on the Django server without an external AI provider. It checks topic coverage, not whether an explanation is technically correct. Three system design scenarios are included.
+For example, an answer mentioning only an idempotency key receives a retry-policy drill. A revision adding bounded backoff and a recovery path shows which topics were added. This is a topic-coverage comparison, not a hiring score or proof of technical correctness.
 
-## Current capabilities
+## What works today
 
-| Feature | Behavior |
-| --- | --- |
-| Text practice | Scenario prompts, answer editing and evidence from the submitted response |
-| Review journal | Explicit saves to this browser, with the latest 20 reviews retained |
-| Export | Download a review as JSON |
-| AI feedback | Requires provider credentials, consent and remaining shared allowance |
-| Live coaching | Requires LiveKit and a voice worker; microphone controls and an eight minute session limit |
+- Three scenarios: caching, reliable queues and API scaling.
+- Free server-side coverage review, supporting excerpts and scenario-specific drills.
+- Before and after comparison and downloadable practice plans.
+- Explicit saves to a browser journal, retaining the latest 20 reviews.
+- Optional AI feedback with consent and a shared spending allowance.
+- Optional LiveKit voice coaching, with final transcript segments delivered to the browser for explicit review. Speaking-time estimates are based on word count, not measured speech.
 
-Saved reviews do not sync across devices. Audio is sent only after consent and browser microphone permission. The public paid allowance is shared across visitors; free text practice does not consume it.
+Saved reviews do not sync across devices. Free practice uses no paid AI. The existing aggregate public AI allowance remains capped at $2 and is shared across visitors; paid requests stop when the persistent allowance is exhausted.
 
 ## How it works
 

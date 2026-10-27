@@ -784,3 +784,60 @@ html {
     scroll-behavior: auto;
   }
 }
+
+.practice-path {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0 0 24px;
+}
+.practice-path span {
+  padding: 10px 16px;
+  background: #eeedf7;
+  border-radius: 30px;
+  font-size: 12px;
+  color: #79728f;
+}
+.practice-path .current {
+  background: #5943b6;
+  color: white;
+}
+.revision-context,
+.comparison-report {
+  padding: 24px;
+  background: #f0edff;
+  border: 1px solid #ddd5f5;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+.revision-context p,
+.comparison-report p {
+  line-height: 1.7;
+}
+.drill-plan {
+  margin: 28px 0;
+  border-top: 1px solid #e4e0ed;
+  padding-top: 24px;
+}
+.drill-plan article {
+  padding: 22px 0;
+  border-bottom: 1px solid #e4e0ed;
+}
+.drill-plan h4 {
+  font-size: 19px;
+  margin: 12px 0;
+}
+.drill-plan article p {
+  line-height: 1.7;
+  max-width: 800px;
+}
+.drill-plan summary {
+  cursor: pointer;
+  color: #5e48a9;
+  font-size: 13px;
+}
+.revise-button,
+.plan-export {
+  margin-top: 20px;
+  margin-right: 12px;
+}

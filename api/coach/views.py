@@ -15,6 +15,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_GET, require_POST
 from .rubric import SCENARIOS, baseline_review
+from .practice_plan import build_plan
 
 
 def error(message, status=400):
@@ -88,7 +89,11 @@ def review(request):
         return error("Write an answer between 20 and 8000 characters.")
     if mode not in ["baseline", "ai"]:
         return error("Choose baseline or ai review.")
+    previous = data.get("previous_answer")
+    if previous is not None and (not isinstance(previous, str) or not 20 <= len(previous.strip()) <= 8000):
+        return error("The previous answer must contain 20 to 8000 characters.")
     baseline = baseline_review(scenario, answer)
+    baseline.update(build_plan(scenario, answer, previous))
     if mode == "baseline":
         return JsonResponse(baseline)
     if data.get("consent") is not True:

@@ -5,6 +5,27 @@ import { api } from "./api";
 import type { Room } from "livekit-client";
 
 interface Review {
+  practice_plan?: {
+    topic: string;
+    title: string;
+    exercise: string;
+    example: string;
+    priority: string;
+  }[];
+  comparison?: {
+    before_topics: number;
+    after_topics: number;
+    new_topics: string[];
+    lost_topics: string[];
+    word_change: number;
+    answer_changed: boolean;
+    meaning: string;
+  } | null;
+  speaking_estimate?: {
+    min_seconds: number;
+    max_seconds: number;
+    basis: string;
+  };
   coverage: { title: string; covered: boolean; evidence: string }[];
   next_question: string;
   disclaimer: string;
@@ -19,6 +40,38 @@ interface Review {
   templateUrl: "./practice.html",
 })
 export class PracticeComponent implements OnInit, OnDestroy {
+  previousAnswer = "";
+  transcript = signal("");
+  revise() {
+    if (!this.result()) return;
+    this.previousAnswer = this.reviewedAnswer;
+    this.answer = this.reviewedAnswer;
+    this.result.set(null);
+    this.savedNotice.set("");
+    document
+      .querySelector("#answer")
+      ?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  useTranscript() {
+    this.answer = this.transcript();
+    this.result.set(null);
+    this.previousAnswer = "";
+    this.savedNotice.set("");
+    this.stopVoice();
+  }
+  exportPlan() {
+    const review = this.result();
+    if (!review) return;
+    this.exportReview({
+      schema_version: 2,
+      scenario: this.scenarios[this.selected].title,
+      original_answer: this.previousAnswer || null,
+      revised_answer: this.reviewedAnswer,
+      next_practice: review.practice_plan,
+      comparison: review.comparison,
+      review,
+    });
+  }
   ready = signal(false);
   connecting = signal(true);
   capabilities = signal({ voice: false, ai_review: false });
@@ -82,6 +135,7 @@ export class PracticeComponent implements OnInit, OnDestroy {
     const generation = ++this.voiceGeneration;
     this.error.set("");
     this.voiceState.set("Connecting");
+    this.transcript.set("");
     try {
       const ticket = await api<{
         url: string;
@@ -95,6 +149,19 @@ export class PracticeComponent implements OnInit, OnDestroy {
       const { Room, RoomEvent, Track } = await import("livekit-client");
       const room = new Room();
       this.room = room;
+      room.on(RoomEvent.DataReceived, (payload, participant, _kind, topic) => {
+        if (
+          topic !== "practice-transcript" ||
+          !participant?.isAgent ||
+          payload.length > 40000
+        )
+          return;
+        try {
+          const data = JSON.parse(new TextDecoder().decode(payload));
+          if (typeof data.text === "string")
+            this.transcript.set(data.text.slice(0, 8000));
+        } catch {}
+      });
       room.on(RoomEvent.TrackSubscribed, (track) => {
         if (track.kind === Track.Kind.Audio) {
           const el = track.attach();
@@ -258,6 +325,8 @@ export class PracticeComponent implements OnInit, OnDestroy {
     this.savedNotice.set("");
     this.result.set(null);
     this.answer = "";
+    this.previousAnswer = "";
+    this.transcript.set("");
     this.error.set("");
   }
   async review() {
@@ -274,6 +343,7 @@ export class PracticeComponent implements OnInit, OnDestroy {
           answer: this.answer,
           mode: this.useAI ? "ai" : "baseline",
           consent: this.useAI,
+          previous_answer: this.previousAnswer || undefined,
         }),
       );
     } catch (e) {

@@ -53,4 +53,9 @@ else:
     assert all(p["price"] <= 40 and p["category"] == "Workspace" for p in json.loads(body)["products"])
     status, _, _ = request("/api/catalog?budget=NaN")
     assert status == 400
+revision={"scenario":"queue","previous_answer":"Use an idempotency key to handle duplicate deliveries.","answer":"Use an idempotency key in a database transaction. Retry with exponential backoff. A dead letter queue allows replay after recovery."}
+status,body,_=request("/api/practice/review",json.dumps(revision).encode(),{"Content-Type":"application/json","X-CSRFToken":csrf,"Origin":base})
+report=json.loads(body)
+assert status==200 and len(report["practice_plan"])==3,(status,body)
+assert report["comparison"]["before_topics"]==1 and report["comparison"]["after_topics"]==3,report
 print(kind + ": gateway, security headers, health and application flow passed")

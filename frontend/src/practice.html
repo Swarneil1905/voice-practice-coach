@@ -34,14 +34,36 @@
       <div class="heading">
         <div>
           <p class="eyebrow">SYSTEM DESIGN PRACTICE</p>
-          <h1>Your next good answer<br />starts here.</h1>
-          <p>Choose a scenario. Talk it through. Find what to improve.</p>
+          <h1>Leave with a stronger answer<br />and a plan to practice.</h1>
+          <p>
+            Rehearse a system design question, work through one focused drill,
+            then compare your revision.
+          </p>
         </div>
         <div class="session-length">
           <app-icon name="clock" /><strong>08</strong
           ><span>MINUTE VOICE SESSION</span>
         </div>
       </div>
+      <div class="practice-path">
+        <span [class.current]="!result()&&!previousAnswer">1. First answer</span
+        ><span [class.current]="!!result()&&!previousAnswer"
+          >2. Focused drill</span
+        ><span [class.current]="!!previousAnswer">3. Revise and compare</span>
+      </div>
+      @if(previousAnswer){
+      <div class="revision-context">
+        <strong>Revision in progress</strong>
+        <p>
+          Improve your original explanation using the drill. The next review
+          compares both answers on the same topic checklist.
+        </p>
+        <details>
+          <summary>Read the original answer</summary>
+          <p>{{previousAnswer}}</p>
+        </details>
+      </div>
+      }
       <label class="scenario-picker"
         >Scenario<select
           [ngModel]="selected"
@@ -138,6 +160,19 @@
             </p>
             }
           </section>
+          @if(transcript()){
+          <section class="focus-card">
+            <p class="eyebrow">YOUR SPOKEN ANSWER</p>
+            <p class="saved-answer">{{transcript()}}</p>
+            <button class="secondary" (click)="useTranscript()">
+              Use transcript for my practice plan
+            </button>
+            <p class="fine-print">
+              Check transcription errors before reviewing. Text stays in this
+              tab unless you save a review.
+            </p>
+          </section>
+          }
           <section class="focus-card">
             <p class="eyebrow">WHAT TO COVER</p>
             @for(point of scenarios[selected].points; track point; let i =
@@ -164,6 +199,53 @@
             >{{r.ai_feedback ? 'AI assisted' : 'Coverage check'}}</span
           >
         </div>
+        @if(r.comparison; as c){
+        <section class="comparison-report">
+          <p class="eyebrow">YOUR BEFORE AND AFTER</p>
+          <h3>{{c.before_topics}} → {{c.after_topics}} topics mentioned</h3>
+          <p>
+            {{c.answer_changed ? 'Your explanation changed. Review the evidence
+            below.' : 'The answer is unchanged. Try the drill before submitting
+            again.'}}
+          </p>
+          <p>
+            <strong>Newly addressed:</strong> {{c.new_topics.join(', ') || 'No
+            new topics detected'}}
+          </p>
+          <p>
+            <strong>No longer mentioned:</strong> {{c.lost_topics.join(', ') ||
+            'None'}}
+          </p>
+          <p class="fine-print">{{c.meaning}}</p>
+        </section>
+        } @if(r.practice_plan?.length){
+        <section class="drill-plan">
+          <p class="eyebrow">YOUR NEXT PRACTICE PLAN</p>
+          <h3>One concrete exercise for each part of the answer.</h3>
+          @for(drill of r.practice_plan;track drill.topic){
+          <article>
+            <span class="tag"
+              >{{drill.priority==='address_gap'?'Start here':'Go deeper'}}</span
+            >
+            <h4>{{drill.title}}</h4>
+            <p>{{drill.exercise}}</p>
+            <details>
+              <summary>See an example starting point</summary>
+              <p>{{drill.example}}</p>
+              <p class="fine-print">
+                Adapt this to your design. It is an illustration, not a model
+                answer.
+              </p>
+            </details>
+          </article>
+          }
+          <button class="primary revise-button" (click)="revise()">
+            Revise my answer and compare</button
+          ><button class="secondary plan-export" (click)="exportPlan()">
+            Export practice plan
+          </button>
+        </section>
+        }
         <div class="coverage-grid">
           @for(item of r.coverage; track item.title){
           <article>
@@ -187,6 +269,12 @@
             <p>{{r.next_question}}</p>
           </div>
         </div>
+        @if(r.speaking_estimate;as estimate){
+        <p class="fine-print">
+          Estimated speaking time: {{estimate.min_seconds}} to
+          {{estimate.max_seconds}} seconds. {{estimate.basis}}
+        </p>
+        }
         <p class="fine-print">{{r.disclaimer}}</p>
         <div class="review-actions">
           <button
